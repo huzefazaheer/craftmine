@@ -39,7 +39,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "CraftMine", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Proj", NULL, NULL);
     if (!window) {
         std::cerr << "Failed to create GLFW window!";
         glfwTerminate();
@@ -47,6 +47,9 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
+
+    // Enable z testing
+    glEnable(GL_DEPTH_TEST);
 
     // Initialize GLEW
     if(glewInit() != GLEW_OK) {
@@ -58,14 +61,68 @@ int main() {
 
     // Set up vertex data and buffers
     float vertices[] = {
-        // positions         // colors
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+        // Positions          // Colors (R,G,B)      // Face
+        // Front face (Red)
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,    // 0
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,    // 1
+         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,    // 2
+        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,    // 3
+    
+        // Back face (Green)
+         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,    // 4
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,    // 5
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,    // 6
+         0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,    // 7
+    
+        // Left face (Blue)
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,    // 8
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,    // 9
+        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,    // 10
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,    // 11
+    
+        // Right face (Yellow)
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,    // 12
+         0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,    // 13
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,    // 14
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,    // 15
+    
+        // Top face (Cyan)
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f,    // 16
+         0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f,    // 17
+         0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,    // 18
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,    // 19
+    
+        // Bottom face (Magenta)
+        -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,    // 20
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,    // 21
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f,    // 22
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f     // 23
     };
-
+    
     unsigned int indices[] = {
-        0, 1, 2
+        // Front face
+        0, 1, 2,
+        2, 3, 0,
+    
+        // Back face
+        4, 5, 6,
+        6, 7, 4,
+    
+        // Left face
+        8, 9, 10,
+        10, 11, 8,
+    
+        // Right face
+        12, 13, 14,
+        14, 15, 12,
+    
+        // Top face
+        16, 17, 18,
+        18, 19, 16,
+    
+        // Bottom face
+        20, 21, 22,
+        22, 23, 20
     };
 
     unsigned int VBO, VAO, EBO;
@@ -98,7 +155,6 @@ int main() {
     // Unbind VAO (this also unbinds the EBO)
     glBindVertexArray(0);
 
-
     // Main loop
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -109,11 +165,29 @@ int main() {
         
         // Draw our two triangles
         shader1.use();
+
+        // Create translations
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        unsigned int modelLoc = glGetUniformLocation(shader1.ID, "model");
+        unsigned int viewLoc  = glGetUniformLocation(shader1.ID, "view");
+        unsigned int projectionLoc  = glGetUniformLocation(shader1.ID, "projection");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     // Cleanup
