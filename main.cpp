@@ -1,15 +1,15 @@
 #include "config.h"
 #include "camera.h"
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1000;
+const unsigned int SCR_HEIGHT = 800;
 
 bool wireframeMode = false;
 Camera gameCam;
 float deltaTime = 0.0f;
 
+float lastFrame = 0.0f;
 void getDeltaTime(){
-    float lastFrame = 0.0f;
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
@@ -47,6 +47,35 @@ void processInput(GLFWwindow *window) {
         gameCam.handleRight(deltaTime);
 }
 
+float lastX = 400, lastY = 300;
+const float sensitivity = 0.0005f;
+bool firstMouse = true;
+void mouse_callback(GLFWwindow* window, double xpos, double ypos){
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; 
+    lastX = xpos;
+    lastY = ypos;
+    float yaw = gameCam.getYaw();
+    float pitch = gameCam.getPitch();
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+    yaw   += xoffset;
+    pitch += yoffset;  
+    if(pitch > 89.0f)
+    pitch =  89.0f;
+    if(pitch < -89.0f)
+    pitch = -89.0f;
+    gameCam.setPitch(pitch);
+    gameCam.setYaw(yaw);
+}
+
 int main() {
     // Initialize GLFW
     if(!glfwInit()) {
@@ -67,6 +96,10 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
+    glfwSetCursorPosCallback(window, mouse_callback);
+
+    // No cursor
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Enable z testing
     glEnable(GL_DEPTH_TEST);
@@ -182,7 +215,6 @@ int main() {
         
         // Render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
         
         // Draw our two triangles
         shader1.use();
