@@ -7,6 +7,6 @@ layout (location = 1) in vec3 aColor;
 out vec3 vertexColor;
 void main()
 {
-    gl_Position = projection * view * model * vec4(aPos, 1);
+    gl_Position =  projection * view * model * vec4(aPos, 1);
     vertexColor = aColor;
 }

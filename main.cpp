@@ -1,9 +1,19 @@
 #include "config.h"
+#include "camera.h"
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 bool wireframeMode = false;
+Camera gameCam;
+float deltaTime = 0.0f;
+
+void getDeltaTime(){
+    float lastFrame = 0.0f;
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+}
 
 void processInput(GLFWwindow *window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -25,6 +35,16 @@ void processInput(GLFWwindow *window) {
     } else {
         zKeyPressed = false;
     }
+
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        gameCam.handleForward(deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        gameCam.handleBackward(deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        gameCam.handleLeft(deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        gameCam.handleRight(deltaTime);
 }
 
 int main() {
@@ -157,6 +177,7 @@ int main() {
 
     // Main loop
     while(!glfwWindowShouldClose(window)) {
+        getDeltaTime();
         processInput(window);
         
         // Render
@@ -168,16 +189,18 @@ int main() {
 
         // Create translations
         glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
+
+        //spin model relative to global position
         model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        //deals with prespective
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
         unsigned int modelLoc = glGetUniformLocation(shader1.ID, "model");
         unsigned int viewLoc  = glGetUniformLocation(shader1.ID, "view");
         unsigned int projectionLoc  = glGetUniformLocation(shader1.ID, "projection");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(gameCam.getViewMatrix()));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 
