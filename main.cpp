@@ -80,6 +80,10 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos){
     gameCam.setYaw(yaw);
 }
 
+
+//HJOW THIS WORK??
+
+
 int main() {
     // Initialize GLFW
     if(!glfwInit()) {
@@ -95,7 +99,7 @@ int main() {
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-    GLFWwindow* window = glfwCreateWindow(mode -> width, mode -> height, "Proj", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(mode -> width, mode -> height, "Proj", monitor, NULL);
     if (!window) {
         std::cerr << "Failed to create GLFW window!";
         glfwTerminate();
@@ -231,7 +235,7 @@ int main() {
         glm::mat4 projection = glm::mat4(1.0f);
 
         //spin model relative to global position
-        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         //deals with prespective
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
