@@ -78,6 +78,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos){
     pitch = -89.0f;
     gameCam.setPitch(pitch);
     gameCam.setYaw(yaw);
+
 }
 
 
@@ -237,7 +238,7 @@ int main() {
         //spin model relative to global position
         model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         //deals with prespective
-        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(90.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
         unsigned int modelLoc = glGetUniformLocation(shader1.ID, "model");
         unsigned int viewLoc  = glGetUniformLocation(shader1.ID, "view");
