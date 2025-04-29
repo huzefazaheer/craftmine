@@ -1,8 +1,8 @@
 #include "config.h"
 #include "camera.h"
 
-const unsigned int SCR_WIDTH = 1000;
-const unsigned int SCR_HEIGHT = 800;
+const unsigned int SCR_WIDTH = 1600;
+const unsigned int SCR_HEIGHT = 1200;
 
 bool wireframeMode = false;
 Camera gameCam;
@@ -45,10 +45,14 @@ void processInput(GLFWwindow *window) {
         gameCam.handleLeft(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         gameCam.handleRight(deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    gameCam.handleUp(deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    gameCam.handleDown(deltaTime);
 }
 
 float lastX = 400, lastY = 300;
-const float sensitivity = 0.0005f;
+const float sensitivity = 0.05f;
 bool firstMouse = true;
 void mouse_callback(GLFWwindow* window, double xpos, double ypos){
     if (firstMouse)
@@ -88,7 +92,10 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Proj", NULL, NULL);
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    GLFWwindow* window = glfwCreateWindow(mode -> width, mode -> height, "Proj", NULL, NULL);
     if (!window) {
         std::cerr << "Failed to create GLFW window!";
         glfwTerminate();
