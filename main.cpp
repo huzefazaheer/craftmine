@@ -2,6 +2,7 @@
     #include "camera.h"
     #define STB_IMAGE_IMPLEMENTATION
     #include "stb_image.h"
+    #include "PerlinNoise.hpp"
     #include <vector>
     #include <filesystem>
     
@@ -251,8 +252,10 @@
     
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-    
+
         // Set up a list of positions where cubes will be placed
+        const siv::PerlinNoise::seed_type seed = 123456u;
+	    const siv::PerlinNoise perlin{ seed };
         std::vector<glm::vec3> cubePositions = {
             glm::vec3(0.0f, 0.0f, 0.0f),
         };
@@ -260,7 +263,18 @@
         //DELETE
         for (int i = 0; i < 100; i++) {
             for (int j = 0; j < 100; j++) {  
-                cubePositions.push_back(glm::vec3(i, 0.0f, j));
+                // Adjust frequency and amplitude for smoother transitions across a 100x100 area
+                const float e = 
+                perlin.octave2D_01((i * 0.02), (j * 0.02), 8) +         // Medium features: still smooth, but more variation
+                perlin.octave2D_01((i * 0.1), (j * 0.1), 16) +         // Fine details: subtle changes
+                perlin.octave2D_01((i * 0.3), (j * 0.3), 32);          // Very fine details: small but smooth transition
+
+                // Apply smoothing
+                float smoothedHeight = round((e + 1.0) * 5.0); // Scale to range [0, 10] with gentle offset
+
+                for (int k = static_cast<int>(smoothedHeight); k > 10; k-- ){
+                    cubePositions.push_back(glm::vec3(i, k, j));
+                }
             }
         }
         
@@ -302,6 +316,7 @@
         glDeleteBuffers(1, &EBO);
     
         glfwTerminate();
+
         return 0;
     }
     
