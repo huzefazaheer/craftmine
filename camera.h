@@ -7,11 +7,11 @@ class Camera {
         glm::vec3 direction;
         const float MOVEMENTSPEED = 3.5f;
         float yaw = -90.0f;
-        float pitch = 0.0f;
+        float pitch = -60.0f;
     
     public:
         Camera() {
-            cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
+            cameraPos = glm::vec3(0.0f, 20.0f, 5.0f);
             cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
             cameraBack = glm::vec3(-1.0f, 0.0f, 0.0f);
 
@@ -21,9 +21,10 @@ class Camera {
         }
 
         void calculateDirection(){
-            direction.x = cos(glm::radians(yaw) * cos(glm::radians(pitch)));
-            direction.y = sin(glm::radians(pitch));
-            direction.z = sin(glm::radians(yaw) * cos(glm::radians(pitch)));
+            direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));  // X-axis direction
+            direction.y = sin(glm::radians(pitch));                           // Y-axis (up/down) direction
+            direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));  // Z-axis direction
+
         }
     
         void handleForward(float deltaTime, int modifier) {

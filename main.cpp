@@ -56,7 +56,7 @@
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
             gameCam.handleDown(deltaTime);
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-            speedModifier == 1 ? speedModifier = 3 : speedModifier = 1;
+            speedModifier == 1 ? speedModifier = 6 : speedModifier = 1;
     }   
     
     float lastX = 400, lastY = 300;
@@ -130,9 +130,9 @@
 
         // Load Texture
         // Load Texture
-        unsigned int texture1;
-        glGenTextures(1, &texture1);
-        glBindTexture(GL_TEXTURE_2D, texture1);
+        unsigned int stoneTexture, grassTexture;
+        glGenTextures(1, &stoneTexture);
+        glBindTexture(GL_TEXTURE_2D, stoneTexture);
 
         // Set texture parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -143,7 +143,7 @@
         // Load the image using stb_image
         int width, height, nrChannels;
         stbi_set_flip_vertically_on_load(true);  // Flip the texture vertically
-        unsigned char *data = stbi_load("./cobblestone.png", &width, &height, &nrChannels, 0);  // Change this path if necessary
+        unsigned char *data = stbi_load("./stone1.png", &width, &height, &nrChannels, 0);  // Change this path if necessary
         if (data) {
             if (nrChannels == 3) {
                 // If the image has 3 channels (RGB), use GL_RGB
@@ -153,12 +153,42 @@
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
             } else {
                 std::cerr << "Unsupported number of channels!" << std::endl;
+                std::cerr << nrChannels;
             }
             glGenerateMipmap(GL_TEXTURE_2D);
         } else {
             std::cerr << "Failed to load texture!" << std::endl;
         }
         stbi_image_free(data);
+        glGenTextures(1, &grassTexture);
+        glBindTexture(GL_TEXTURE_2D, grassTexture);
+
+        // Set texture parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // Load the image using stb_image
+        int width1, height1, nrChannels1;
+        stbi_set_flip_vertically_on_load(true);  // Flip the texture vertically
+        unsigned char *data1 = stbi_load("./grass.png", &width1, &height1, &nrChannels1, 0);  // Change this path if necessary
+        if (data1) {
+            if (nrChannels1 == 3) {
+                // If the image has 3 channels (RGB), use GL_RGB
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width1, height1, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
+            } else if (nrChannels1 == 4) {
+                // If the image has 4 channels (RGBA), use GL_RGBA
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width1, height1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+            } else {
+                std::cerr << "Unsupported number of channels!" << std::endl;
+                std::cerr << nrChannels1;
+            }
+            glGenerateMipmap(GL_TEXTURE_2D);
+        } else {
+            std::cerr << "Failed to load texture!" << std::endl;
+        }
+        stbi_image_free(data1);
 
     
         float vertices[] = {
@@ -305,7 +335,10 @@
                 unsigned int modelLoc = glGetUniformLocation(shader1.ID, "model");
                 glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     
-                glBindTexture(GL_TEXTURE_2D, texture1);
+                if(position.y > 11){
+                    glBindTexture(GL_TEXTURE_2D, grassTexture);
+                }else glBindTexture(GL_TEXTURE_2D, stoneTexture);
+                
                 glBindVertexArray(VAO);
                 glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
             }
