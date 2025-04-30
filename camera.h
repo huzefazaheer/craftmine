@@ -26,16 +26,16 @@ class Camera {
             direction.z = sin(glm::radians(yaw) * cos(glm::radians(pitch)));
         }
     
-        void handleForward(float deltaTime) {
+        void handleForward(float deltaTime, int modifier) {
             glm::vec3 camF = cameraFront;
             camF.y = 0.0f;
-            cameraPos += MOVEMENTSPEED * deltaTime * camF;
+            cameraPos += modifier * MOVEMENTSPEED * deltaTime * camF;
         }   
     
-        void handleBackward(float deltaTime) {
+        void handleBackward(float deltaTime, int modifier) {
             glm::vec3 camF = cameraFront;
             camF.y = 0.0f;
-            cameraPos -= MOVEMENTSPEED * deltaTime * camF;
+            cameraPos -= modifier * MOVEMENTSPEED * deltaTime * camF;
         }
     
         void handleLeft(float deltaTime) {
@@ -69,6 +69,8 @@ class Camera {
         float getPitch(){
             return pitch;
         }
+
+        
     
         glm::mat4 getViewMatrix() {
             calculateDirection();

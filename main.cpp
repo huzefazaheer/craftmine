@@ -7,6 +7,8 @@
     
     const unsigned int SCR_WIDTH = 1600;
     const unsigned int SCR_HEIGHT = 1200;
+
+    int speedModifier = 1;
     
     bool wireframeMode = false;
     Camera gameCam;
@@ -41,9 +43,9 @@
         }
     
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            gameCam.handleForward(deltaTime);
+            gameCam.handleForward(deltaTime, speedModifier);
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            gameCam.handleBackward(deltaTime);
+            gameCam.handleBackward(deltaTime, speedModifier);
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
             gameCam.handleLeft(deltaTime);
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
@@ -52,7 +54,9 @@
             gameCam.handleUp(deltaTime);
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
             gameCam.handleDown(deltaTime);
-    }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+            speedModifier == 1 ? speedModifier = 3 : speedModifier = 1;
+    }   
     
     float lastX = 400, lastY = 300;
     const float sensitivity = 0.05f;
