@@ -272,12 +272,15 @@
                 // Apply smoothing
                 float smoothedHeight = round((e + 1.0) * 5.0); // Scale to range [0, 10] with gentle offset
 
-                for (int k = static_cast<int>(smoothedHeight); k > 10; k-- ){
+                for (int k = static_cast<int>(smoothedHeight); k > 8    ; k-- ){
                     cubePositions.push_back(glm::vec3(i, k, j));
                 }
             }
         }
-        
+
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CW); 
 
         // Main loop
         while (!glfwWindowShouldClose(window)) {
