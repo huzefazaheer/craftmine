@@ -1,5 +1,6 @@
     #include "config.h"
     #include "camera.h"
+    #include "block.h"
     #define STB_IMAGE_IMPLEMENTATION
     #include "stb_image.h"
     #include "PerlinNoise.hpp"
@@ -130,95 +131,31 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
         
 
     
-        Shader shader1("shaders/shader.vs", "shaders/shader.fs");
+        Shader gameShader("shaders/shader.vs", "shaders/shader.fs");
 
-        // Load Texture
-        unsigned int stoneTexture, grassTexture, dirtTexture;
-        glGenTextures(1, &stoneTexture);
-        glBindTexture(GL_TEXTURE_2D, stoneTexture);
 
-        // Set texture parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // Load textures
 
-        // Load the image using stb_image
+        GLuint textureAtlas;
+        glGenTextures(1, &textureAtlas);
+        glBindTexture(GL_TEXTURE_2D, textureAtlas);
+
         int width, height, nrChannels;
-        stbi_set_flip_vertically_on_load(true);  // Flip the texture vertically
-        unsigned char *data = stbi_load("./textures/stone.png", &width, &height, &nrChannels, 0);  // Change this path if necessary
-        if (data) {
-            if (nrChannels == 3) {
-                // If the image has 3 channels (RGB), use GL_RGB
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            } else if (nrChannels == 4) {
-                // If the image has 4 channels (RGBA), use GL_RGBA
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-            } else {
-                std::cerr << "Unsupported number of channels!" << std::endl;
-                std::cerr << nrChannels;
-            }
-            glGenerateMipmap(GL_TEXTURE_2D);
-        } else {
-            std::cerr << "Failed to load texture!" << std::endl;
+        unsigned char *data = stbi_load("./textureatlas.png", &width, &height, &nrChannels, 0);
+
+        if(data){
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glGenerateMipmap(textureAtlas);
+        }else {
+            std::cerr << "Failed to load texture atlas!" << std::endl;
         }
         stbi_image_free(data);
-        glGenTextures(1, &grassTexture);
-        glBindTexture(GL_TEXTURE_2D, grassTexture);
 
-        // Set texture parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        // Load the image using stb_image
-        int width1, height1, nrChannels1;
-        stbi_set_flip_vertically_on_load(true);  // Flip the texture vertically
-        unsigned char *data1 = stbi_load("./textures/grass.png", &width1, &height1, &nrChannels1, 0);  // Change this path if necessary
-        if (data1) {
-            if (nrChannels1 == 3) {
-                // If the image has 3 channels (RGB), use GL_RGB
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width1, height1, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
-            } else if (nrChannels1 == 4) {
-                // If the image has 4 channels (RGBA), use GL_RGBA
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width1, height1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
-            } else {
-                std::cerr << "Unsupported number of channels!" << std::endl;
-                std::cerr << nrChannels1;
-            }
-            glGenerateMipmap(GL_TEXTURE_2D);
-        } else {
-            std::cerr << "Failed to load texture!" << std::endl;
-        }
-        stbi_image_free(data1);
-        glGenTextures(1, &dirtTexture);
-        glBindTexture(GL_TEXTURE_2D, dirtTexture);
-        int width2, height2, nrChannels2;
-        stbi_set_flip_vertically_on_load(true);  // Flip the texture vertically
-        unsigned char *data2 = stbi_load("./textures/dirt.png", &width2, &height2, &nrChannels2, 0);  // Change this path if necessary
-        if (data2) {
-            if (nrChannels2 == 3) {
-                // If the image has 3 channels (RGB), use GL_RGB
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
-            } else if (nrChannels2 == 4) {
-                // If the image has 4 channels (RGBA), use GL_RGBA
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
-            } else {
-                std::cerr << "Unsupported number of channels!" << std::endl;
-                std::cerr << nrChannels2;
-            }
-            glGenerateMipmap(GL_TEXTURE_2D);
-        } else {
-            std::cerr << "Failed to load texture!" << std::endl;
-        }
-        stbi_image_free(data2);
-
-        // Set texture parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
     
@@ -314,12 +251,23 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
+        //DELETE
+        Block STONE, GRASS, DIRT, DIRT2;
+        STONE.setTexture(0.375f, 0);
+        GRASS.setTexture(0, 0);
+        DIRT.setTexture(0.25f, 0);
+        DIRT2.setTexture(0.375f, 0.25);
         // Set up a list of positions where cubes will be placed
         const siv::PerlinNoise::seed_type seed = 123456u;
 	    const siv::PerlinNoise perlin{ seed };
-        std::vector<glm::vec3> cubePositions = {
-            glm::vec3(0.0f, 0.0f, 0.0f),
+        struct blockEntity
+        {
+            glm::vec3 position;
+            Block material;
         };
+
+        std::vector<blockEntity> Cubes;
+
     
         //DELETE
         for (int i = 0; i < 100; i++) {
@@ -332,9 +280,22 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
 
                 // Apply smoothing
                 float smoothedHeight = round((e + 1.0) * 5.0); // Scale to range [0, 10] with gentle offset
+                int height = static_cast<int>(smoothedHeight);
 
-                for (int k = static_cast<int>(smoothedHeight); k > 8    ; k-- ){
-                    cubePositions.push_back(glm::vec3(i, k, j));
+                for (int k = height; k > 8 ; k-- ){
+                    blockEntity block;
+                    if(k == height && height >= 12){
+                        block.material = GRASS;
+                    }
+                    else if(height < 11){
+                        block.material = STONE;
+                    }else {
+                        block.material = DIRT2;
+                    }
+                    block.position.x = i;
+                    block.position.z = j;
+                    block.position.y = k;
+                    Cubes.push_back(block);
                 }
             }
         }
@@ -349,29 +310,35 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
             processInput(window);
     
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            shader1.use();
+            gameShader.use();
     
             glm::mat4 projection = glm::perspective(glm::radians(62.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-            unsigned int projectionLoc = glGetUniformLocation(shader1.ID, "projection");
+            unsigned int projectionLoc = glGetUniformLocation(gameShader.ID, "projection");
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     
-            unsigned int viewLoc = glGetUniformLocation(shader1.ID, "view");
+            unsigned int viewLoc = glGetUniformLocation(gameShader.ID, "view");
             glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(gameCam.getViewMatrix()));
+
+           
     
             // Render each cube at its position
-            for (const glm::vec3& position : cubePositions) {
+            for (const blockEntity& cube : Cubes) {
                 glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, position);
+                model = glm::translate(model, cube.position);
     
-                unsigned int modelLoc = glGetUniformLocation(shader1.ID, "model");
+                unsigned int modelLoc = glGetUniformLocation(gameShader.ID, "model");
                 glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    
-                if(position.y > 11){
-                    if(position.y >= 13){
-                        glBindTexture(GL_TEXTURE_2D, grassTexture);
-                    }else glBindTexture(GL_TEXTURE_2D, dirtTexture);
-                }else glBindTexture(GL_TEXTURE_2D, stoneTexture);
-                
+
+                unsigned int texCoordsLoc = glGetUniformLocation(gameShader.ID, "uvTransform");
+
+
+                glm::vec4 cubeT = cube.material.getTexture();
+                glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
+
+
+                glBindTexture(GL_TEXTURE_2D, textureAtlas);
+
+
                 glBindVertexArray(VAO);
                 glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
             }
