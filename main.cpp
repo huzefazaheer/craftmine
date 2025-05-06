@@ -112,6 +112,10 @@
         glfwMakeContextCurrent(window);
         glfwSetCursorPosCallback(window, mouse_callback);
     
+        // Set the background color to a light sky blue color (RGBA)
+glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
+
+
         // No cursor
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
@@ -129,8 +133,7 @@
         Shader shader1("shaders/shader.vs", "shaders/shader.fs");
 
         // Load Texture
-        // Load Texture
-        unsigned int stoneTexture, grassTexture;
+        unsigned int stoneTexture, grassTexture, dirtTexture;
         glGenTextures(1, &stoneTexture);
         glBindTexture(GL_TEXTURE_2D, stoneTexture);
 
@@ -143,7 +146,7 @@
         // Load the image using stb_image
         int width, height, nrChannels;
         stbi_set_flip_vertically_on_load(true);  // Flip the texture vertically
-        unsigned char *data = stbi_load("./stone1.png", &width, &height, &nrChannels, 0);  // Change this path if necessary
+        unsigned char *data = stbi_load("./textures/stone.png", &width, &height, &nrChannels, 0);  // Change this path if necessary
         if (data) {
             if (nrChannels == 3) {
                 // If the image has 3 channels (RGB), use GL_RGB
@@ -172,7 +175,7 @@
         // Load the image using stb_image
         int width1, height1, nrChannels1;
         stbi_set_flip_vertically_on_load(true);  // Flip the texture vertically
-        unsigned char *data1 = stbi_load("./grass.png", &width1, &height1, &nrChannels1, 0);  // Change this path if necessary
+        unsigned char *data1 = stbi_load("./textures/grass.png", &width1, &height1, &nrChannels1, 0);  // Change this path if necessary
         if (data1) {
             if (nrChannels1 == 3) {
                 // If the image has 3 channels (RGB), use GL_RGB
@@ -189,6 +192,34 @@
             std::cerr << "Failed to load texture!" << std::endl;
         }
         stbi_image_free(data1);
+        glGenTextures(1, &dirtTexture);
+        glBindTexture(GL_TEXTURE_2D, dirtTexture);
+        int width2, height2, nrChannels2;
+        stbi_set_flip_vertically_on_load(true);  // Flip the texture vertically
+        unsigned char *data2 = stbi_load("./textures/dirt.png", &width2, &height2, &nrChannels2, 0);  // Change this path if necessary
+        if (data2) {
+            if (nrChannels2 == 3) {
+                // If the image has 3 channels (RGB), use GL_RGB
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
+            } else if (nrChannels2 == 4) {
+                // If the image has 4 channels (RGBA), use GL_RGBA
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
+            } else {
+                std::cerr << "Unsupported number of channels!" << std::endl;
+                std::cerr << nrChannels2;
+            }
+            glGenerateMipmap(GL_TEXTURE_2D);
+        } else {
+            std::cerr << "Failed to load texture!" << std::endl;
+        }
+        stbi_image_free(data2);
+
+        // Set texture parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 
     
         float vertices[] = {
@@ -295,7 +326,7 @@
             for (int j = 0; j < 100; j++) {  
                 // Adjust frequency and amplitude for smoother transitions across a 100x100 area
                 const float e = 
-                perlin.octave2D_01((i * 0.02), (j * 0.02), 8) +         // Medium features: still smooth, but more variation
+                perlin.octave2D_01((i * 0.02), (j * 0.02), 8) +            // Medium features: still smooth, but more variation
                 perlin.octave2D_01((i * 0.1), (j * 0.1), 16) +         // Fine details: subtle changes
                 perlin.octave2D_01((i * 0.3), (j * 0.3), 32);          // Very fine details: small but smooth transition
 
@@ -320,7 +351,7 @@
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             shader1.use();
     
-            glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+            glm::mat4 projection = glm::perspective(glm::radians(62.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
             unsigned int projectionLoc = glGetUniformLocation(shader1.ID, "projection");
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     
@@ -336,7 +367,9 @@
                 glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     
                 if(position.y > 11){
-                    glBindTexture(GL_TEXTURE_2D, grassTexture);
+                    if(position.y >= 13){
+                        glBindTexture(GL_TEXTURE_2D, grassTexture);
+                    }else glBindTexture(GL_TEXTURE_2D, dirtTexture);
                 }else glBindTexture(GL_TEXTURE_2D, stoneTexture);
                 
                 glBindVertexArray(VAO);
