@@ -253,10 +253,11 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
 
         //DELETE
         Block STONE, GRASS, DIRT, DIRT2;
-        STONE.setTexture(0.375f, 0);
-        GRASS.setTexture(0, 0);
-        DIRT.setTexture(0.25f, 0);
-        DIRT2.setTexture(0.375f, 0.25);
+        STONE.setTextures(0.375f, 0);
+        GRASS.setSideTextures(0.125f, 0);
+        GRASS.setTopTexture(0, 0);
+        DIRT.setTextures(0.25f, 0);
+        DIRT2.setTextures(0.375f, 0.25);
         // Set up a list of positions where cubes will be placed
         const siv::PerlinNoise::seed_type seed = 123456u;
 	    const siv::PerlinNoise perlin{ seed };
@@ -274,23 +275,30 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
             for (int j = 0; j < 100; j++) {  
                 // Adjust frequency and amplitude for smoother transitions across a 100x100 area
                 const float e = 
-                perlin.octave2D_01((i * 0.02), (j * 0.02), 8) +            // Medium features: still smooth, but more variation
-                perlin.octave2D_01((i * 0.1), (j * 0.1), 16) +         // Fine details: subtle changes
-                perlin.octave2D_01((i * 0.3), (j * 0.3), 32);          // Very fine details: small but smooth transition
+                perlin.octave2D_01((i * 0.01), (j * 0.01), 4) * 0.7 +  // Broad, smooth features (dominant)
+                perlin.octave2D_01((i * 0.05), (j * 0.05), 8) * 0.3;   // Subtle medium features
+
+                const float l = 
+                perlin.octave2D_01((i * 0.01), (j * 0.03), 20) * 2; 
+                perlin.octave2D_01((i * 0.03), (j * 0.03), 3) * 1;   // Subtle medium features  // Subtle medium features
 
                 // Apply smoothing
-                float smoothedHeight = round((e + 1.0) * 5.0); // Scale to range [0, 10] with gentle offset
+                float smoothedHeight = round((e + 1.0) * 5.0 + (l * 7)); // Scale to range [0, 10] with gentle offset
                 int height = static_cast<int>(smoothedHeight);
 
-                for (int k = height; k > 8 ; k-- ){
+                std::cout <<height << std::endl;
+
+                for (int k = height; k > 7 ; k-- ){
                     blockEntity block;
-                    if(k == height && height >= 12){
+                    if(k == height && height >= 13){
                         block.material = GRASS;
                     }
                     else if(height < 11){
                         block.material = STONE;
                     }else {
-                        block.material = DIRT2;
+                        if ((i + j) / 11 == 0){
+                            block.material = DIRT2;
+                        }else block.material = DIRT;
                     }
                     block.position.x = i;
                     block.position.z = j;
@@ -312,7 +320,7 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             gameShader.use();
     
-            glm::mat4 projection = glm::perspective(glm::radians(62.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+            glm::mat4 projection = glm::perspective(glm::radians(65.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
             unsigned int projectionLoc = glGetUniformLocation(gameShader.ID, "projection");
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     
@@ -331,16 +339,38 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
 
                 unsigned int texCoordsLoc = glGetUniformLocation(gameShader.ID, "uvTransform");
 
-
-                glm::vec4 cubeT = cube.material.getTexture();
-                glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
-
+                glm::vec4 cubeT;
 
                 glBindTexture(GL_TEXTURE_2D, textureAtlas);
 
-
                 glBindVertexArray(VAO);
-                glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+                // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+                cubeT = cube.material.getFrontTexture();
+                glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(0 * sizeof(GLuint)));
+                
+                cubeT = cube.material.getBackTexture();
+                glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(6 * sizeof(GLuint)));
+                
+                cubeT = cube.material.getLeftTexture();
+                glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(12 * sizeof(GLuint)));
+                
+                cubeT = cube.material.getRightTexture();
+                glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(18 * sizeof(GLuint)));
+                
+                cubeT = cube.material.getTopTexture();
+                glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(24 * sizeof(GLuint)));
+ 
+                cubeT = cube.material.getBottomTexture();
+                glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(30 * sizeof(GLuint)));
+                
+                glBindVertexArray(0);
             }
     
             glfwSwapBuffers(window);
