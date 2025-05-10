@@ -299,26 +299,11 @@ float crosshairSize = 0.015f;
 
         glBindVertexArray(0);
 
-        //DELETE
-        Block STONE, GRASS, DIRT, DIRT2, WOOD, LEAF;
-        STONE.setTextures(0.375f, 0);
-        GRASS.setSideTextures(0.125f, 0);
-        GRASS.setTopTexture(0, 0);
-        DIRT.setTextures(0.25f, 0);
-        DIRT2.setTextures(0.375f, 0.25);
-        WOOD.setSideTextures(0.75f, 0);
-        WOOD.setTopTexture(0.875f,0);
-        LEAF.setTextures(0, 0.25);
         // Set up a list of positions where cubes will be placed
         const siv::PerlinNoise::seed_type seed = 123456u;
 	    const siv::PerlinNoise perlin{ seed };
-        struct blockEntity
-        {
-            glm::vec3 position;
-            Block material;
-        };
 
-        std::vector<blockEntity> Cubes;
+        std::vector<Block> Cubes;
 
     
         //DELETE
@@ -343,14 +328,14 @@ float crosshairSize = 0.015f;
                     int o = i + (rand() % 5) - 2;
                     int p = j + (rand() % 5) - 2;
                     for (int g = height + 1; g < height + 6; g++){
-                        blockEntity block;
+                        Block block;
                         block.position.x = o;
                         block.position.z = p;
                         block.position.y = g;
-                        block.material = WOOD;
+                        block.setMaterial(WOOD);
                         Cubes.push_back(block);
                         if (g == height + 4){
-                            block.material = LEAF;
+                            block.setMaterial(LEAF);
                             block.position.z = p + 1;
                             Cubes.push_back(block);
                             block.position.z = p + 2;
@@ -380,9 +365,9 @@ float crosshairSize = 0.015f;
                             block.position.x = o - 1;
                             block.position.z = p + 1;
                             Cubes.push_back(block);
-                            block.material = WOOD;
+                            block.setMaterial(WOOD);
                         }else if (g == height + 5){
-                            block.material = LEAF;
+                            block.setMaterial(LEAF);
                             block.position.x = o + 1;
                             Cubes.push_back(block);
                             block.position.x = o - 1;
@@ -392,30 +377,30 @@ float crosshairSize = 0.015f;
                             Cubes.push_back(block);
                             block.position.z = p + 1;
                             Cubes.push_back(block);
-                            block.material = WOOD;
+                            block.setMaterial(WOOD);
                         }
                     }
-                    blockEntity block1;
+                    Block block1;
                         block1.position.x = o;
                         block1.position.z = p;
                         block1.position.y = height + 6;
-                        block1.material = LEAF;
+                        block1.setMaterial(LEAF);
                         Cubes.push_back(block1);
                     
                         
                 }
 
                 for (int k = height; k > 7 ; k-- ){
-                    blockEntity block;
+                    Block block;
                     if(k == height && height >= 13){
-                        block.material = GRASS;
+                        block.setMaterial(GRASS);
                     }
                     else if(height < 11){
-                        block.material = STONE;
+                        block.setMaterial(STONE);
                     }else {
                         if ((i + j) / 11 == 0){
-                            block.material = DIRT2;
-                        }else block.material = DIRT;
+                            block.setMaterial(COARSE_DIRT);
+                        }else block.setMaterial(DIRT);
                     }
                     block.position.x = i;
                     block.position.z = j;
@@ -447,7 +432,7 @@ float crosshairSize = 0.015f;
            
     
             // Render each cube at its position
-            for (const blockEntity& cube : Cubes) {
+            for (const Block& cube : Cubes) {
                 glm::mat4 model = glm::mat4(1.0f);
                 model = glm::translate(model, cube.position);
     
@@ -462,27 +447,27 @@ float crosshairSize = 0.015f;
 
                 glBindVertexArray(VAO);
 
-                cubeT = cube.material.getFrontTexture();
+                cubeT = cube.getFrontTexture();
                 glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(0 * sizeof(GLuint)));
                 
-                cubeT = cube.material.getBackTexture();
+                cubeT = cube.getBackTexture();
                 glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
                     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(6 * sizeof(GLuint)));
                 
-                cubeT = cube.material.getLeftTexture();
+                cubeT = cube.getLeftTexture();
                 glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(12 * sizeof(GLuint)));
                 
-                cubeT = cube.material.getRightTexture();
+                cubeT = cube.getRightTexture();
                 glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(18 * sizeof(GLuint)));
                 
-                cubeT = cube.material.getTopTexture();
+                cubeT = cube.getTopTexture();
                 glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(24 * sizeof(GLuint)));
  
-                cubeT = cube.material.getBottomTexture();
+                cubeT = cube.getBottomTexture();
                 glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(30 * sizeof(GLuint)));
                 
