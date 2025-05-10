@@ -5,7 +5,7 @@ class Camera {
         glm::vec3 cameraUp;
         glm::vec3 cameraBack;
         glm::vec3 direction;
-        const float MOVEMENTSPEED = 3.5f;
+        const float MOVEMENTSPEED = 4.0f;
         float yaw = -90.0f;
         float pitch = -60.0f;
     

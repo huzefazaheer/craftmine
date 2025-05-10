@@ -57,7 +57,7 @@
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
             gameCam.handleDown(deltaTime);
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-            speedModifier == 1 ? speedModifier = 6 : speedModifier = 1;
+            speedModifier == 1 ? speedModifier = 3 : speedModifier = 1;
     }   
     
     float lastX = 400, lastY = 300;
@@ -132,6 +132,7 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
 
     
         Shader gameShader("shaders/shader.vs", "shaders/shader.fs");
+        Shader crosshairShader("shaders/crosshair.vs", "shaders/crosshair.fs");
 
 
         // Load textures
@@ -156,7 +157,27 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+        float aspectRatio = (float)SCR_WIDTH / (float)SCR_HEIGHT;
 
+
+// Crosshair size (base value)
+float crosshairSize = 0.015f;
+        // Simple crosshair vertices (centered, small size)
+        float crosshairVertices[] = {
+            // Horizontal line (corrected for aspect ratio)
+            -crosshairSize,  0.0f,          0.0f, 0.5f,  // Left point
+             crosshairSize,  0.0f,          1.0f, 0.5f,  // Right point
+            
+            // Vertical line (no aspect ratio correction needed)
+             0.0f,                     -crosshairSize*aspectRatio, 0.5f, 0.0f,  // Bottom point
+             0.0f,                      crosshairSize*aspectRatio,  0.5f, 1.0f   // Top point
+        };
+        
+
+        unsigned int crosshairIndices[] = {
+            0, 1,  // Horizontal line
+            2, 3   // Vertical line
+        };
 
     
         float vertices[] = {
@@ -251,6 +272,29 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
+        // Crosshair VAO setup
+        unsigned int crosshairVAO, crosshairVBO, crosshairEBO;
+        glGenVertexArrays(1, &crosshairVAO);
+        glGenBuffers(1, &crosshairVBO);
+        glGenBuffers(1, &crosshairEBO);
+
+        glBindVertexArray(crosshairVAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, crosshairVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(crosshairVertices), crosshairVertices, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, crosshairEBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(crosshairIndices), crosshairIndices, GL_STATIC_DRAW);
+
+        // Position attribute
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        // Texture coord attribute
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        glBindVertexArray(0);
+
         //DELETE
         Block STONE, GRASS, DIRT, DIRT2;
         STONE.setTextures(0.375f, 0);
@@ -285,8 +329,6 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
                 // Apply smoothing
                 float smoothedHeight = round((e + 1.0) * 5.0 + (l * 7)); // Scale to range [0, 10] with gentle offset
                 int height = static_cast<int>(smoothedHeight);
-
-                std::cout <<height << std::endl;
 
                 for (int k = height; k > 7 ; k-- ){
                     blockEntity block;
@@ -344,7 +386,6 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
                 glBindTexture(GL_TEXTURE_2D, textureAtlas);
 
                 glBindVertexArray(VAO);
-                // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
                 cubeT = cube.material.getFrontTexture();
                 glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
@@ -352,7 +393,7 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
                 
                 cubeT = cube.material.getBackTexture();
                 glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(6 * sizeof(GLuint)));
+                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(6 * sizeof(GLuint)));
                 
                 cubeT = cube.material.getLeftTexture();
                 glUniform4f(glGetUniformLocation(gameShader.ID, "uvTransform"), cubeT.x, cubeT.y, cubeT.a, cubeT.b);
@@ -372,6 +413,17 @@ glClearColor(0.529f, 0.808f, 0.922f, 1.0f);  // Light sky blue
                 
                 glBindVertexArray(0);
             }
+            // Render crosshair (after 3D scene)
+            glDisable(GL_DEPTH_TEST); // Disable depth test so it's always on top
+
+            crosshairShader.use();
+            glBindVertexArray(crosshairVAO);
+
+glLineWidth(3.0f); // Set line width (default is 1.0)
+            glDrawElements(GL_LINES, 4, GL_UNSIGNED_INT, 0);
+            glBindVertexArray(0);
+
+            glEnable(GL_DEPTH_TEST); // Re-enable depth test for next frame
     
             glfwSwapBuffers(window);
             glfwPollEvents();
