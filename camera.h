@@ -47,12 +47,12 @@ class Camera {
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * MOVEMENTSPEED * deltaTime;
         }
 
-        void handleUp(float deltaTime) {
-            cameraPos += MOVEMENTSPEED * deltaTime * cameraUp;
+        void handleUp(float deltaTime, int modifier) {
+            cameraPos +=  modifier *MOVEMENTSPEED * deltaTime * cameraUp;
         }
 
-        void handleDown(float deltaTime) {
-            cameraPos -= MOVEMENTSPEED * deltaTime * cameraUp;
+        void handleDown(float deltaTime, int modifier) {
+            cameraPos -= modifier * MOVEMENTSPEED * deltaTime * cameraUp;
         }
 
         void setYaw(float yaw1){
