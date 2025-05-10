@@ -12,6 +12,7 @@ class Block{
     public:
     Block(){
     }
+    
 
     // Set coords of texture in atlas where x and y are coords
     void setTextures(float x, float y){

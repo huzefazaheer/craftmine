@@ -296,12 +296,15 @@ float crosshairSize = 0.015f;
         glBindVertexArray(0);
 
         //DELETE
-        Block STONE, GRASS, DIRT, DIRT2;
+        Block STONE, GRASS, DIRT, DIRT2, WOOD, LEAF;
         STONE.setTextures(0.375f, 0);
         GRASS.setSideTextures(0.125f, 0);
         GRASS.setTopTexture(0, 0);
         DIRT.setTextures(0.25f, 0);
         DIRT2.setTextures(0.375f, 0.25);
+        WOOD.setSideTextures(0.75f, 0);
+        WOOD.setTopTexture(0.875f,0);
+        LEAF.setTextures(0, 0.25);
         // Set up a list of positions where cubes will be placed
         const siv::PerlinNoise::seed_type seed = 123456u;
 	    const siv::PerlinNoise perlin{ seed };
@@ -329,6 +332,74 @@ float crosshairSize = 0.015f;
                 // Apply smoothing
                 float smoothedHeight = round((e + 1.0) * 5.0 + (l * 7)); // Scale to range [0, 10] with gentle offset
                 int height = static_cast<int>(smoothedHeight);
+
+                // doo doo code to place trees
+                int value = rand() % 2;
+                if(i % 13 ==  0 && j % 11 == 0 && value == 0 && height >= 13){
+                    int o = i + (rand() % 5) - 2;
+                    int p = j + (rand() % 5) - 2;
+                    for (int g = height + 1; g < height + 6; g++){
+                        blockEntity block;
+                        block.position.x = o;
+                        block.position.z = p;
+                        block.position.y = g;
+                        block.material = WOOD;
+                        Cubes.push_back(block);
+                        if (g == height + 4){
+                            block.material = LEAF;
+                            block.position.z = p + 1;
+                            Cubes.push_back(block);
+                            block.position.z = p + 2;
+                            Cubes.push_back(block);
+                            block.position.z = p - 1;
+                            Cubes.push_back(block);
+                            block.position.z = p - 2;
+                            Cubes.push_back(block);
+                            block.position.z = p;
+                            block.position.x = o + 1;
+                            Cubes.push_back(block);
+                            block.position.x = o + 2;
+                            Cubes.push_back(block);
+                            block.position.x = o - 1;
+                            Cubes.push_back(block);
+                            block.position.x = o - 2;
+                            Cubes.push_back(block);
+                            block.position.x = o + 1;
+                            block.position.z = p + 1;
+                            Cubes.push_back(block);
+                            block.position.x = o - 1;
+                            block.position.z = p - 1;
+                            Cubes.push_back(block);
+                            block.position.x = o + 1;
+                            block.position.z = p - 1;
+                            Cubes.push_back(block);
+                            block.position.x = o - 1;
+                            block.position.z = p + 1;
+                            Cubes.push_back(block);
+                            block.material = WOOD;
+                        }else if (g == height + 5){
+                            block.material = LEAF;
+                            block.position.x = o + 1;
+                            Cubes.push_back(block);
+                            block.position.x = o - 1;
+                            Cubes.push_back(block);
+                            block.position.x = o;
+                            block.position.z = p - 1;
+                            Cubes.push_back(block);
+                            block.position.z = p + 1;
+                            Cubes.push_back(block);
+                            block.material = WOOD;
+                        }
+                    }
+                    blockEntity block1;
+                        block1.position.x = o;
+                        block1.position.z = p;
+                        block1.position.y = height + 6;
+                        block1.material = LEAF;
+                        Cubes.push_back(block1);
+                    
+                        
+                }
 
                 for (int k = height; k > 7 ; k-- ){
                     blockEntity block;
