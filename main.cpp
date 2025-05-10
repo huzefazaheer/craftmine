@@ -28,6 +28,7 @@
     }
 
     std::vector<Block> Cubes;
+    Material activeMat = DIRT;
     
     void processInput(GLFWwindow *window) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -67,6 +68,17 @@
         else
         speedModifier = 1.8;
 
+
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+            activeMat = DIRT;
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+            activeMat = COBBLESTONE;
+        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+            activeMat = PLANK;
+        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+            activeMat = BRICK;
+        if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+            activeMat = WOOD;
 
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
@@ -122,10 +134,10 @@
                     }
                     
                     if (!positionOccupied) {
-                        Block newBlock;
-                        newBlock.position = newBlockPos;
-                        newBlock.setMaterial(DIRT); // Or whatever material you want
-                        Cubes.push_back(newBlock);
+                        Block placeBlock;
+                        placeBlock.position = newBlockPos;
+                        placeBlock.setMaterial(activeMat);
+                        Cubes.push_back(placeBlock);
                     }
                 }
             }

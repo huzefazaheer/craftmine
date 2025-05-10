@@ -10,7 +10,9 @@ enum Material{
     COARSE_DIRT,
     WOOD,
     LEAF,
-    TNT
+    COBBLESTONE,
+    BRICK,
+    PLANK
 };
 
 class Block{
@@ -70,7 +72,14 @@ class Block{
             setTextures(0.375f, 0.25);
         }else if (material == LEAF){
             setTextures(0, 0.25);
-        }else setTextures(0.875f,0.25);
+        }else if (material == COBBLESTONE){
+            setTextures(0.5, 0);
+        }else if (material == PLANK){
+            setTextures(0.625, 0);
+        }else if (material == BRICK){
+            setTextures(0.125, 0.25);
+        }
+        else setTextures(0.875f,0.25);
         
     }
 
