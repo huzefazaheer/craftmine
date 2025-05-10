@@ -1,5 +1,8 @@
 #include "config.h"
 
+#pragma once
+
+
 enum Material{
     STONE,
     GRASS,
@@ -93,6 +96,13 @@ class Block{
 
     glm::vec4 getRightTexture() const {
         return rightTextureVec;
+    }
+
+    glm::vec3 getMin() const { 
+        return position - glm::vec3(0.5f); 
+    }
+    glm::vec3 getMax() const { 
+        return position + glm::vec3(0.5f); 
     }
 
     

@@ -6,12 +6,15 @@
     #include "PerlinNoise.hpp"
     #include <vector>
     #include <filesystem>
+    #include "raycaster.h"
     
     const unsigned int SCR_WIDTH = 1600;
     const unsigned int SCR_HEIGHT = 1200;
 
     int speedModifier = 1.8;
     int upModifier = 1;
+    static bool leftMousePressed = false;
+    static bool rightMousePressed = false;
     
     bool wireframeMode = false;
     Camera gameCam;
@@ -23,6 +26,8 @@
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
     }
+
+    std::vector<Block> Cubes;
     
     void processInput(GLFWwindow *window) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -61,6 +66,72 @@
         speedModifier = 3;
         else
         speedModifier = 1.8;
+
+
+
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+            if (!leftMousePressed) {
+                leftMousePressed = true;
+                
+                // Perform ray cast
+                glm::vec3 rayOrigin = gameCam.cameraPos;
+                glm::vec3 rayDirection = gameCam.cameraFront;
+                glm::vec3 hitNormal, hitPosition;
+                
+                Block* selectedBlock = rayCast(rayOrigin, rayDirection, Cubes, 5.0f, hitNormal, hitPosition);
+                
+                if (selectedBlock != nullptr) {
+                    // Remove the block
+                    auto it = std::find_if(Cubes.begin(), Cubes.end(), 
+                        [selectedBlock](const Block& b) {
+                            return b.position == selectedBlock->position;
+                        });
+                    
+                    if (it != Cubes.end()) {
+                        Cubes.erase(it);
+                    }
+                }
+            }
+        } else {
+            leftMousePressed = false;
+        }
+
+
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+            if (!rightMousePressed) {
+                rightMousePressed = true;
+                
+                // Perform ray cast
+                glm::vec3 rayOrigin = gameCam.cameraPos;
+                glm::vec3 rayDirection = gameCam.cameraFront;
+                glm::vec3 hitNormal, hitPosition;
+                
+                Block* selectedBlock = rayCast(rayOrigin, rayDirection, Cubes, 5.0f, hitNormal, hitPosition);
+                
+                if (selectedBlock != nullptr) {
+                    // Place new block adjacent to the hit face
+                    glm::vec3 newBlockPos = selectedBlock->position + hitNormal;
+                    
+                    // Check if position is already occupied
+                    bool positionOccupied = false;
+                    for (const Block& b : Cubes) {
+                        if (b.position == newBlockPos) {
+                            positionOccupied = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!positionOccupied) {
+                        Block newBlock;
+                        newBlock.position = newBlockPos;
+                        newBlock.setMaterial(DIRT); // Or whatever material you want
+                        Cubes.push_back(newBlock);
+                    }
+                }
+            }
+        } else {
+            rightMousePressed = false;
+        }
     
     }   
     
@@ -302,8 +373,6 @@ float crosshairSize = 0.015f;
         // Set up a list of positions where cubes will be placed
         const siv::PerlinNoise::seed_type seed = 123456u;
 	    const siv::PerlinNoise perlin{ seed };
-
-        std::vector<Block> Cubes;
 
     
         //DELETE

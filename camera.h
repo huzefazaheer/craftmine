@@ -1,15 +1,16 @@
 class Camera {
     private:
-        glm::vec3 cameraPos;
-        glm::vec3 cameraFront;
-        glm::vec3 cameraUp;
-        glm::vec3 cameraBack;
-        glm::vec3 direction;
         const float MOVEMENTSPEED = 4.0f;
         float yaw = -90.0f;
         float pitch = -60.0f;
     
     public:
+        glm::vec3 cameraPos;
+        glm::vec3 cameraFront;
+        glm::vec3 cameraUp;
+        glm::vec3 cameraBack;
+        glm::vec3 direction;
+
         Camera() {
             cameraPos = glm::vec3(0.0f, 20.0f, 5.0f);
             cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
