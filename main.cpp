@@ -93,14 +93,16 @@
                 Block* selectedBlock = rayCast(rayOrigin, rayDirection, Cubes, 5.0f, hitNormal, hitPosition);
                 
                 if (selectedBlock != nullptr) {
-                    // Remove the block
+                    if(selectedBlock->getMaterial() != BEDROCK){
+                        // Remove the block
                     auto it = std::find_if(Cubes.begin(), Cubes.end(), 
-                        [selectedBlock](const Block& b) {
-                            return b.position == selectedBlock->position;
-                        });
-                    
+                    [selectedBlock](const Block& b) {
+                        return b.position == selectedBlock->position;
+                    });
+                
                     if (it != Cubes.end()) {
                         Cubes.erase(it);
+                    }
                     }
                 }
             }
@@ -488,7 +490,14 @@ float crosshairSize = 0.015f;
                     block.position.y = k;
                     Cubes.push_back(block);
                 }
+                Block bedrock;
+                bedrock.position.x = i;
+                bedrock.position.z = j;
+                bedrock.position.y = 7;
+                bedrock.setMaterial(BEDROCK);
+                Cubes.push_back(bedrock);
             }
+
         }
 
         glEnable(GL_CULL_FACE);

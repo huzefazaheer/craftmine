@@ -12,7 +12,8 @@ enum Material{
     LEAF,
     COBBLESTONE,
     BRICK,
-    PLANK
+    PLANK,
+    BEDROCK
 };
 
 class Block{
@@ -23,6 +24,7 @@ class Block{
     glm::vec4 rightTextureVec;
     glm::vec4 topTextureVec;
     glm::vec4 bottomTextureVec;
+    Material blockMaterial;
 
     // Set coords of texture in atlas where x and y are coords
     void setTextures(float x, float y){
@@ -58,6 +60,7 @@ class Block{
     }
 
     void setMaterial(Material material){
+        blockMaterial = material;
         if (material == STONE){
             setTextures(0.375f, 0);
         }else if(material == GRASS){
@@ -78,6 +81,8 @@ class Block{
             setTextures(0.625, 0);
         }else if (material == BRICK){
             setTextures(0.125, 0.25);
+        }else if (material == BEDROCK){
+            setTextures(0.125, 0.5);
         }
         else setTextures(0.875f,0.25);
         
@@ -110,8 +115,13 @@ class Block{
     glm::vec3 getMin() const { 
         return position - glm::vec3(0.5f); 
     }
+
     glm::vec3 getMax() const { 
         return position + glm::vec3(0.5f); 
+    }
+
+    Material getMaterial(){
+        return blockMaterial;
     }
 
     
