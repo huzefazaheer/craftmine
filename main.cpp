@@ -410,6 +410,7 @@ float crosshairSize = 0.015f;
                 if(i % 13 ==  0 && j % 11 == 0 && value == 0 && height >= 13){
                     int o = i + (rand() % 5) - 2;
                     int p = j + (rand() % 5) - 2;
+                    if(p > 100 || p < 0 || o > 100 || o < 0) continue;
                     for (int g = height + 1; g < height + 6; g++){
                         Block block;
                         block.position.x = o;
@@ -478,10 +479,10 @@ float crosshairSize = 0.015f;
                     if(k == height && height >= 13){
                         block.setMaterial(GRASS);
                     }
-                    else if(height < 11){
+                    else if(k < 11){
                         block.setMaterial(STONE);
                     }else {
-                        if ((i + j) / 11 == 0){
+                        if ((i + j) % 11 == 0 && (k / 3 == 0 || k % 17 == 0)){
                             block.setMaterial(COARSE_DIRT);
                         }else block.setMaterial(DIRT);
                     }
